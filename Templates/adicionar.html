@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Adicionar árvores</h2>
+<form method="post" enctype="multipart/form-data">
+    <p>Espécie: <input type="text" name="especie" required></p>
+    <p>Família: <input type="text" name="familia"></p>
+    <p>Nome popular: <input type="text" name="nome_popular"></p>
+    <p>Habitat: <input type="text" name="habitat" required></p>
+    <p>Descriçãi: <input type="text" name="descricao" required></p>
+    <p>Imagem: <input type="file" name="imagens" multiple></p>
+    <p> <input type="submit" value="Adicionar"></p>
+</form>
+<a href="{{ url_for('index') }}">Voltar</a>
+
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Resultado da Identificação</h2>
+<p><strong>Espécie:</strong>{{ especie }}</p>
+<p><strong>Descrição:</strong>{{ descricao }}</p>
+<img src="{{ url_for('static', filename='uploads/' + imagem.split('/')[-1]) }}" alt="Planta identificada" width="300">
+<a href="{{ url_for('identificar') }}">Nova identificação</a>
+
+{% endblock %}
