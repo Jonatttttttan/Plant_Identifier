@@ -4,12 +4,12 @@
 
 <h1>Exibição de Angiospermas</h1>
 <div class = "  text-white border border-primary border border-top-0 d-inline p-2 text-bg-primary float-start" name = "adicionar">
-<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('adicionar') }}">Adicionar plantas</a>
+<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('main.adicionar') }}">Adicionar plantas</a>
 
 </div>
-<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('logout') }}">Logout</a>
-<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('home') }}">HOME</a>
-<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('identificar') }}">Identificar Plantas</a>
+<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('auth.logout') }}">Logout</a>
+<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('main.home') }}">HOME</a>
+<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('identificar.identificar') }}">Identificar Plantas</a>
 
 <table class = "table table-bordered" >
     <thead>
@@ -31,13 +31,13 @@
         <td class="p-3 mb-2 bg-body-secondary">{{planta.nome_popular}}</td>
         <td class="p-3 mb-2 bg-body-secondary">{{planta.habitat}}</td>
         <td class="p-3 mb-2 bg-body-secondary">
-            <a href="{{ url_for('editar', id=planta.id) }}" class = "link-offset-2 link-underline link-underline-opacity-10">Editar</a>
-            <form action="{{ url_for('deletar', id=planta.id) }}" method="post" style="...">
+            <a href="{{ url_for('main.editar', id=planta.id) }}" class = "link-offset-2 link-underline link-underline-opacity-10">Editar</a>
+            <form action="{{ url_for('main.deletar', id=planta.id) }}" method="post" style="...">
                 <button type="submit" onclick="return conform('Tem certeza que deseja excluir?')">Deletar</button>
             </form>
         </td>
         <td class="p-3 mb-2 bg-body-secondary">
-            <a href="{{ url_for('info', id=planta.id) }}" class="link-offset-2 link-underline link-underline-opacity-10">Informações</a>
+            <a href="{{ url_for('main.info', id=planta.id) }}" class="link-offset-2 link-underline link-underline-opacity-10">Informações</a>
         </td>
 
     </tr>

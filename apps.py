@@ -7,13 +7,18 @@ from flask import session, flash # Componentes de login
 import base64
 import requests
 from dotenv import load_dotenv # Proteger API_KEY
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin # pip install flask-login
+
 
 load_dotenv()
 
+login_manager = LoginManager()
 
 
 PLANT_ID_API_KEY = os.getenv('PLANT_ID_API_KEY')
 app = Flask(__name__)
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 UPLOAD_fOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 app.config["UPLOAD_FOLDER"] = UPLOAD_fOLDER
@@ -68,9 +73,30 @@ def init_db():
     cursor.close()
     conn.close()
 
+# Classe
+class User(UserMixin):
+    def __init__(self, id, username, password):
+        self.id = id
+        self.username = username
+        self.password = password
+
+@login_manager.user_loader
+def load_user(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute('SELECT * FROM usuarios WHERE id = %s', (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if user:
+        return User(id=user['id'], username=user['username'], password=user['password'])
+    return None
+
 # Rotas
 # Página Inicial
 @app.route('/', methods = ('GET',))
+@login_required
 def index():
     conn = get_db_connection();
     cursor = conn.cursor(dictionary=True)
@@ -83,6 +109,7 @@ def index():
 
 # Adicionar plantas
 @app.route('/adicionar', methods = ('GET', 'POST',))
+@login_required
 def adicionar():
     if request.method == 'POST':
         especie = request.form['especie']
@@ -90,6 +117,18 @@ def adicionar():
         nome_popular = request.form['nome_popular']
         habitat = request.form['habitat']
         descricao = request.form['descricao']
+
+        lista = {"espécie" : especie, "familia" : familia, "habitat":habitat}
+        excecao = list(map(lambda x:  "Campo obrigatório-" + x if not lista[x] else "-" + x ,lista.keys()))
+        for x in excecao:
+            if x.split("-")[0] ==  "Campo obrigatório":
+                flash("Campo obrigatório:" + lista[x.split("-")[-1]])
+                return redirect(url_for('adicionar'))
+
+
+
+        # Tratamentos exceção
+
 
         #imagem = request.files['imagem']
         #imagem_filename = None
@@ -120,6 +159,7 @@ def adicionar():
 
 # Editar plantas
 @app.route('/edit/<int:id>', methods = ('GET', 'POST'))
+@login_required
 def editar(id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -143,6 +183,7 @@ def editar(id):
 
 # Deletar Livro
 @app.route('/delete/<int:id>', methods = ('POST',))
+@login_required
 def deletar(id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -155,6 +196,7 @@ def deletar(id):
 
 # Informações
 @app.route('/info/<int:id>', methods = ('GET',))
+@login_required
 def info(id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -170,6 +212,7 @@ def info(id):
 
 # Rota de identificação
 @app.route('/identificar', methods = ['GET', 'POST'])
+@login_required
 def identificar():
     if request.method == 'POST':
         imagem = request.files['imagem']
@@ -253,8 +296,11 @@ def login():
         conn.close()
 
         if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['username'] = user['username']
+            user_obj = User(id=user['id'], username=user['username'], password=user['password'])
+            login_user(user_obj)
+
+            #session['user_id'] = user['id']
+           # session['username'] = user['username']
             return redirect(url_for('home'))
         else:
             flash('Usuário ou senha incorretos')
@@ -262,8 +308,9 @@ def login():
 
 # Rota Logout
 @app.route('/logout')
+@login_required
 def logout():
-    session.clear()
+    logout_user()
     return redirect(url_for('login'))
 
 # Home
