@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, request, url_for
 import os
 import mysql.connector
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import session, flash # Componentes de login
 import base64
 import requests
@@ -9,7 +10,9 @@ from dotenv import load_dotenv # Proteger API_KEY
 
 load_dotenv()
 
-PLANT_ID_API_KEY = 'm4ysKWujJSWozpb8BPU577j8GtTHuKWjHeqyOYTr2qI7tdyDE7'
+
+
+PLANT_ID_API_KEY = os.getenv('PLANT_ID_API_KEY')
 app = Flask(__name__)
 UPLOAD_fOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
@@ -210,6 +213,30 @@ def identificar():
     return render_template('identificar.html')
 
 
+# Rota de cadastrar
+@app.route('/register', methods = ['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Gera hash da senha
+        password_hash = generate_password_hash(password)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('INSERT INTO usuarios (username, password) VALUES (%s, %s)', (username, password_hash))
+            conn.commit()
+            flash('Usuário cadastrado com sucesso! Faça login.')
+            return redirect(url_for('login'))
+        except mysql.connector.Error as err:
+            flash("Erro ao cadastrar: ", err)
+        finally:
+            cursor.close()
+            conn.close()
+    return render_template('register.html')
+
 
 # Rota de Login
 @app.route('/login', methods = ['GET', 'POST'])
@@ -220,12 +247,12 @@ def login():
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM usuarios WHERE username = %s AND password = %s', (username, password) )
+        cursor.execute('SELECT * FROM usuarios WHERE username = %s', (username,) )
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
-        if user:
+        if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             session['username'] = user['username']
             return redirect(url_for('home'))
@@ -251,7 +278,7 @@ def home():
 # Proteger rotas
 @app.before_request
 def require_login():
-    allowed_routes = ['login']
+    allowed_routes = ['login', 'register']
 
 
     if request.endpoint is None:
