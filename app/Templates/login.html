@@ -2,25 +2,43 @@
 
 {% block content %}
 
-<h2>Login</h2>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <div class="alert alert-danger">{{ messages[0] }}</div>
-  {% endif %}
-{% endwith %}
-<form method="POST">
-    <div class="mb-3">
-        <label>Usuário:</label>
-        <input type="text" name="username" class="form-control" required>
 
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow p-4" style="min-width: 350px;">
+        <h2 class="text-center text-primary mb-4">🔐 Login</h2>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-danger text-center" role="alert">
+                {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuário:</label>
+                <input type="text" name="username" id="username" class="form-control" required>
+
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha:</label>
+                <input type="password" name="password" id="password" class="form-control" required>
+
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Entrar</button>
+
+            </div>
+        </form>
+
+        <div class="mt-3 text-center">
+            <p class="mb-0">Ainda não tem uma conta?</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary btn-sm mt-2">Registrar-se</a>
+        </div>
     </div>
-    <div class="mb-3">
-        <label>Senha:</label>
-        <input type="password" name="password" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Entrar</button>
+</div>
 
-</form>
 
-<a class="bg-primary text-white link-offset-2 link-underline link-underline-opacity-10" href="{{ url_for('auth.register') }}">Registrar-se</a>
+
 {% endblock %}

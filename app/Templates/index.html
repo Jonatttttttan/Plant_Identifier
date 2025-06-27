@@ -1,57 +1,58 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-success">Exibição de Angiospermas</h1>
 
-<h1>Exibição de Angiospermas</h1>
-<div class = "sticky-lg-bottom" name = "adicionar">
-<a class="btn btn-secondary" href="{{ url_for('main.adicionar') }}">Adicionar plantas</a>
+    </div>
 
+
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle shadow-sm rounded">
+        <thead class="table-dark text-center">
+        <tr>
+            <th>ID</th>
+            <th>Espécie</th>
+            <th>Família</th>
+            <th>Nome Popular</th>
+            <th>Habitat</th>
+            <th>Situação</th>
+            <th>Ações</th>
+            <th>Informações</th>
+        </tr></thead>
+        <tbody>
+        {% for planta in plantas %}
+        <tr class="text-center">
+            <td>{{ planta.id }}</td>
+            <td>{{ planta.especie }}</td>
+            <td>{{ planta.familia }}</td>
+            <td>{{ planta.nome_popular }}</td>
+            <td>{{ planta.habitat }}</td>
+            <td>{{ planta.situacao }}</td>
+            <td>
+                <a href="{{ url_for('main.editar', id=planta.id) }}" class="btn btn-sm btn-outline-primary me-2">Editar</a>
+                <form action="{{ url_for('main.deletar', id=planta.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir?')">Deletar</button>
+                </form>
+            </td>
+            <td>
+                <a href="{{ url_for('main.info', id=planta.id) }}" class="btn btn-sm btn-outline-info">Ver</a>
+
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
-<a class="btn btn-warning" href="{{ url_for('auth.logout') }}">Logout</a>
-<a class="btn btn-primary btn-lg" href="{{ url_for('main.home') }}">HOME</a>
-<a class="btn btn-success" href="{{ url_for('identificar.identificar') }}">Identificar Plantas</a>
 
-<table class = "table table-bordered" >
-    <thead>
-    <tr >
-        <th scope="col" class = "p-3 mb-2 bg-dark text-white">ID</th>
-        <th scope="col" class = "p-3 mb-2 bg-dark text-white">Espécie</th>
-        <th scope="col" class = "p-3 mb-2 bg-dark text-white">Família</th>
-        <th scope="col" class = "p-3 mb-2 bg-dark text-white">Nome popular</th>
-        <th scope="col" class = "p-3 mb-2 bg-dark text-white">Habitat</th>
-        <th scope="col" class="  p-3 mb-2 bg-dark text-white">Situação</th>
-        <th scope="col" class = "p-3 mb-2 bg-dark text-white">Ações</th>
-        <th scope="col" class = "p-3 mb-2 bg-dark text-white">Informações</th>
-    </tr></thead>
-
-    {% for planta in plantas %}
-    <tr>
-        <td class="p-3 mb-2 bg-danger text-white">{{planta.id}}</td>
-        <td class="p-3 mb-2 bg-body-secondary">{{planta.especie}}</td>
-        <td class="p-3 mb-2 bg-body-secondary">{{planta.familia}}</td>
-        <td class="p-3 mb-2 bg-body-secondary">{{planta.nome_popular}}</td>
-        <td class="p-3 mb-2 bg-body-secondary">{{planta.habitat}}</td>
-        <td class="p-3 mb-2 bg-body-secondary">{{planta.situacao}}</td>
-        <td class="p-3 mb-2 bg-body-secondary">
-            <a href="{{ url_for('main.editar', id=planta.id) }}" class = "link-offset-2 link-underline link-underline-opacity-10">Editar</a>
-            <form action="{{ url_for('main.deletar', id=planta.id) }}" method="post" style="...">
-                <button type="submit" onclick="return conform('Tem certeza que deseja excluir?')">Deletar</button>
-            </form>
-        </td>
-        <td class="p-3 mb-2 bg-body-secondary">
-            <a href="{{ url_for('main.info', id=planta.id) }}" class="link-offset-2 link-underline link-underline-opacity-10">Informações</a>
-        </td>
-
-    </tr>
-    {% endfor %}
-
-</table>
-
+<!-- Paginação -->
 <nav aria-label="Paginação de plantas">
     <ul class="pagination justify-content-center mt-4">
         {% if page > 1 %}
         <li class="page-item">
-            <a class="page-link" href="{{url_for('main.index',page=page - 1) }}">Anterior</a>
+            <a class="page-link" href="{{ url_for('main.index', page=page - 1) }}">Anterior</a>
 
         </li>
         {% endif %}
@@ -68,8 +69,8 @@
             <a class="page-link" href="{{ url_for('main.index', page=page + 1) }}">Próxima</a>
 
         </li>
-        {% endif %}
+        <{% endif %}
     </ul>
 </nav>
-
+</div>
 {% endblock %}
