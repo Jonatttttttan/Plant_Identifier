@@ -17,14 +17,28 @@ def allowed_file(filename):
 @main_bp.route('/')
 @login_required
 def index():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+
     conn = get_db_connection();
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM angiospermas")
+
+    cursor.execute('SELECT COUNT(*) as total FROM angiospermas')
+    total_rows = cursor.fetchone()['total']
+    total_pages = (total_rows + per_page-1) // per_page
+    cursor.execute("SELECT * FROM angiospermas LIMIT %s OFFSET %s", (per_page, offset))
+
     plantas = cursor.fetchall()
     cursor.close()
     conn.close()
     print(request.endpoint)
-    return render_template('index.html', plantas=plantas)
+    return render_template(
+        'index.html',
+        plantas=plantas,
+        page = page,
+        total_pages = total_pages
+    )
 
 @main_bp.route('/adicionar', methods=['GET', 'POST'])
 @login_required
@@ -35,6 +49,7 @@ def adicionar():
         nome_popular = request.form['nome_popular']
         habitat = request.form['habitat']
         descricao = request.form['descricao']
+        situacao = request.form.getlist('situacao')
 
         lista = {"espécie" : especie, "familia" : familia, "habitat":habitat}
         excecao = list(map(lambda x:  "Campo obrigatório-" + x if not lista[x] else "-" + x ,lista.keys()))
@@ -58,7 +73,7 @@ def adicionar():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao) VALUES (%s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao))
+        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao) VALUES (%s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0]))
         planta_id = cursor.lastrowid
 
         # Agora, salva as imagens

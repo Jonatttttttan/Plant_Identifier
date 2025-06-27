@@ -7,4 +7,8 @@
 <img src="{{ url_for('static', filename='uploads/' + imagem.split('/')[-1]) }}" alt="Planta identificada" width="300">
 <a href="{{ url_for('identificar.identificar') }}">Nova identificação</a>
 
+<div class="text-muted text-center mt-4">
+  <small>Identificação fornecida por <a href="https://plant.id" target="_blank">Plant.id</a></small>
+</div>
+
 {% endblock %}

@@ -7,7 +7,12 @@
     <p>Família: <input type="text" name="familia"></p>
     <p>Nome popular: <input type="text" name="nome_popular"></p>
     <p>Habitat: <input type="text" name="habitat" required></p>
-    <p>Descriçãi: <input type="text" name="descricao" required></p>
+    <p>Descrição: <input type="text" name="descricao" required></p>
+    <label>Situação</label><br>
+    <select name="situacao" multiple size="2">
+        <option value="em risco">Em risco de extinção</option>
+        <option value="seguro">Sem risco de extinção</option>
+    </select><br>
     <p>Imagem: <input type="file" name="imagens" multiple></p>
     <p> <input type="submit" value="Adicionar"></p>
 </form>

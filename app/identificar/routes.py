@@ -46,7 +46,7 @@ def identificar():
                 cursor = conn.cursor()
                 especie = result['suggestions'][0]['plant_name']
                 descricao = result['suggestions'][0].get('plant_details', {}).get('wiki_description', {}).get('value', 'Descrição não disponível')
-                cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao) VALUES (%s, %s, %s, %s, %s)', (especie, "teste", "teste2", "teste3", descricao ))
+                cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao) VALUES (%s, %s, %s, %s, %s, %s)', (especie, "teste", "teste2", "teste3", descricao, "teste4" ))
                 conn.commit()
                 cursor.close()
                 conn.close()
