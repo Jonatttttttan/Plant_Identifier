@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, flash, current_app
+from flask import Blueprint, request, render_template, flash, current_app, redirect, url_for
 from flask_login import login_required
 import os, base64, requests
 from ..db import get_db_connection
@@ -55,6 +55,54 @@ def identificar():
             else:
                 flash("Não foi possível identificar a planta")
     return render_template('identificar.html')
+
+@identificar_bp.route("/identificar_insetos", methods = ['GET', 'POST'])
+@login_required
+def identificar_insetos():
+    if request.method == 'POST':
+        imagem = request.files['imagem']
+        if imagem and allowed_file(imagem.filename):
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(imagem.filename))
+            imagem.save(filepath)
+        # Converter imagem para base 64
+        with open(filepath, 'rb') as img_file:
+            ima_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+
+        # requisição para a API
+        url = 'https://insect.kindwise.com/api/v1/identification'
+        headers = {
+            "Content-Type":"application/json",
+            "Api-Key": os.getenv('INSECT_ID_API_KEY')
+        }
+        payload = {
+            "images":[ima_base64],
+            "similar_images": True
+        }
+
+
+        try:
+          response = requests.post(url, json=payload, headers=headers)
+          print("Status code:", response.status_code)
+          print(response.text)
+          data = response.json()
+          #response = requests.post(url, json=payload, headers=headers)
+          #data = response.json()
+
+
+          if response.status_code==201 and 'result' in data:
+              sugestoes = data['result']['classification']['suggestions']
+
+              imagem_nome = imagem.filename
+              print("teste", imagem_nome)
+              return render_template('resultado_identificacao_insetos.html', sugestoes=sugestoes, imagem=imagem_nome)
+          else:
+              flash("Não foi possível identificar o inseto. Tente novamente")
+              return redirect(url_for('identificar.identificar_insetos'))
+        except Exception as a:
+            print("Erro:", a)
+            flash("Erro na comunicação com a API")
+            return redirect(url_for('identificar.identificar_insetos'))
+    return render_template("identificar_insetos.html")
 
 
 
