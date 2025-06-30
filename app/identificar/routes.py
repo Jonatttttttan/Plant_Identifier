@@ -109,44 +109,94 @@ def identificar_insetos():
 def identificar_cogumelos():
     if request.method == 'POST':
         imagem = request.files['imagem']
+        print(imagem.filename)
         if imagem and allowed_file(imagem.filename):
             filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(imagem.filename))
             imagem.save(filepath)
         # Converter a imagem por base 64
-        with open(filepath, 'rb') as img_file:
-            img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+            with open(filepath, 'rb') as img_file:
+                img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
 
         # Requisição API
-        url ='https://mushroom.kindwise.com/api/v1/identification?details=common_names,url,edibility,psychoactive,characteristic,look_alike&language=pt'
-        headers = {
-            "Content-Type":"application/json",
-            "Api-Key":os.getenv("MUSHROOM_ID_API_KEY")
-        }
-        payload = {
-            "images":[img_base64],
-            "similar_images":True
-        }
+            url ='https://mushroom.kindwise.com/api/v1/identification?details=common_names,url,edibility,psychoactive,characteristic,look_alike&language=pt'
+            headers = {
+                "Content-Type":"application/json",
+                "Api-Key":os.getenv("MUSHROOM_ID_API_KEY")
+            }
+            payload = {
+                "images":[img_base64],
+                "similar_images":True
+            }
 
-        try:
+            try:
 
-            response = requests.post(url, json=payload, headers=headers)
-            print(response.status_code)
-            if response.status_code == 200 or response.status_code == 201:
+                response = requests.post(url, json=payload, headers=headers)
+                print(response.status_code)
+                if response.status_code == 200 or response.status_code == 201:
 
-                data = response.json()
-                sugestoes = data["result"]["classification"]["suggestions"]
-                print("Teste")
-                imagem_nome = imagem.filename
-                return render_template('resultado_identificacao_cogumelos.html', sugestoes=sugestoes, imagem=imagem_nome)
-            else:
-                print("Teste else")
-                flash("Erro o identificar o cogumelo. Verifique a imagem ou tente novamente")
+                    data = response.json()
+                    sugestoes = data["result"]["classification"]["suggestions"]
+                    print("Teste")
+                    imagem_nome = imagem.filename
+                    return render_template('resultado_identificacao_cogumelos.html', sugestoes=sugestoes, imagem=imagem_nome)
+                else:
+                    print("Teste else")
+                    flash("Erro o identificar o cogumelo. Verifique a imagem ou tente novamente")
+                    return redirect(url_for("identificar.identificar_cogumelos"))
+            except Exception as e:
+                print("Teste erro")
+                print("Erro:", e)
+                flash("Erro ao se conectar com a API de identificação")
                 return redirect(url_for("identificar.identificar_cogumelos"))
-        except Exception as e:
-            print("Teste erro")
-            print("Erro:", e)
-            flash("Erro ao se conectar com a API de identificação")
+        else:
             return redirect(url_for("identificar.identificar_cogumelos"))
     return render_template("identificar_cogumelos.html")
+
+@identificar_bp.route('/identificar_pg', methods=['GET', 'POST'])
+@login_required
+def identificar_pg():
+    if request.method == 'POST':
+        imagem = request.files['imagem']
+        print(imagem)
+        if imagem and allowed_file(imagem.filename):
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(imagem.filename))
+            print(filepath)
+            imagem.save(filepath)
+        # Converter imagem para base 64
+            with open(filepath, 'rb') as img_file:
+                img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
+
+        # Requisição API
+            url = 'https://crop.kindwise.com/api/v1/identification'
+            headers = {
+                "Content-Type":"application/json",
+                "Api-Key":os.getenv("AUTH_ID_API_KEY")
+            }
+            payload = {
+                "images":[img_base64],
+                "similar_images":True
+            }
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                print("Status code:", response.status_code)
+                print(response.text)
+                if response.status_code == 200 or response.status_code == 201:
+                    data = response.json()
+                    sugestoes = data.get("result", {}).get("disease",{}).get("suggestions", [])
+                    imagem_nome = imagem.filename
+
+                    return render_template("resultado_health.html", sugestoes=sugestoes, imagem=imagem_nome)
+                else:
+                    flash("Não foi possível ientificar imagem")
+                    print("Teste2")
+                    return redirect(url_for('identificar.identificar_pg'))
+            except Exception as a:
+                print("Erro:", a)
+                return redirect(url_for('identificar.identificar_pg'))
+        else:
+            print("falha")
+            return redirect(url_for('identificar.identificar_pg'))
+    return render_template('identificar_health.html')
+
 
 
