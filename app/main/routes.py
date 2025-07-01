@@ -146,5 +146,9 @@ def info(id):
 def home():
     return render_template('Home.html')
 
+@main_bp.route('/ecologia_home')
+def ecologia_home():
+    return render_template('/ecologia_home.html')
+
 
 

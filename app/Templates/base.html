@@ -23,20 +23,18 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.home') }}">Home</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.adicionar') }}">Adicionar</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('identificar.identificar') }}">Identificar plantas com IA</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('identificar.identificar_insetos') }}">Identificar insetos com IA</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('identificar.identificar_cogumelos') }}">Identificar cogumelos com IA</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('identificar.identificar_pg') }}">Identificar pragas com IA</a>
+
+                <li class="nav-item dropdown">
+                     <a class="nav-link dropdown-toggle" href="#" id="identificarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                         Ecologia
+                     </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="identificarDropdown">
+                        <li><a class="dropdown-item text-success fw-bold" href="{{ url_for('main.adicionar') }}">Adicionar plantas</a> </li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar') }}">Plantas</a> </li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar_insetos') }}">Insetos</a></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar_cogumelos') }}">Cogumelos</a></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar_pg') }}">Pragas</a></li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-warning" href="{{ url_for('auth.logout') }}">Logout</a>

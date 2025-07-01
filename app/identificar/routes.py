@@ -17,6 +17,9 @@ UPLOADER_FOLDER = 'static/uploads'
 def identificar():
     if request.method == 'POST':
         imagem = request.files['imagem']
+        estado_id = request.form['estado']
+        municipio_id = request.form['municipio']
+
         if imagem and allowed_file(imagem.filename):
             filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(imagem.filename))
             imagem.save(filepath)
@@ -25,7 +28,7 @@ def identificar():
             with open(filepath, "rb") as img_file:
                 ima_base64 = base64.b64encode(img_file.read()).decode('utf-8')
 
-            # Requisição para a API
+            # Requisição para a API Plant.id
             url = "https://api.plant.id/v2/identify"
             headers = {
                 "Content-Type" : "application/json",
@@ -42,19 +45,39 @@ def identificar():
             result = response.json()
 
             if 'suggestions' in result:
-                conn = get_db_connection()
-                cursor = conn.cursor()
+                '''conn = get_db_connection()
+                cursor = conn.cursor()'''
                 especie = result['suggestions'][0]['plant_name']
                 descricao = result['suggestions'][0].get('plant_details', {}).get('wiki_description', {}).get('value', 'Descrição não disponível')
-                cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao) VALUES (%s, %s, %s, %s, %s, %s)', (especie, "teste", "teste2", "teste3", descricao, "teste4" ))
+                '''cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao) VALUES (%s, %s, %s, %s, %s, %s)', (especie, "teste", "teste2", "teste3", descricao, "teste4" ))
                 conn.commit()
                 cursor.close()
-                conn.close()
-                print("Inseriu")
-                return render_template('resultado_identificacao.html', especie=especie, descricao=descricao, imagem=filepath)
+                conn.close()'''
+
+                # Chamada da API do IBGE com o ID do municípo
+                url_ibge = "https://servicodados.ibge.gov.br/api/v1/localidades/municipios/" + municipio_id
+                resposta = requests.get(url_ibge)
+                print("Resposta IBGE:", str(resposta.status_code) + " | " + resposta.text)
+                dados_municipio = resposta.json()
+
+                nome_municipio = dados_municipio['nome']
+                microrregiao = dados_municipio['microrregiao']['nome']
+                estado_nome = dados_municipio['microrregiao']['mesorregiao']['UF']['nome']
+                regiao_nome = dados_municipio['microrregiao']['mesorregiao']['UF']['regiao']['nome']
+                cod_ibge = dados_municipio['id']
+
+                # População
+                '''url_pop = "https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/" + municipio_id
+                resp_pop = requests.get(url_pop)
+                print("Resposta do pop:", str(resp_pop.status_code) + " | " + resp_pop.text)
+                dados_pop = resp_pop.json()
+                populacao = dados_pop['projecao']['populacao']
+                print("Inseriu")'''
+                return render_template('resultado_identificacao.html', especie=especie, descricao=descricao, imagem=filepath, nome_municipio=nome_municipio, estado_nome=estado_nome, regiao_nome=regiao_nome,cod_ibge=cod_ibge)
+
             else:
                 flash("Não foi possível identificar a planta")
-    return render_template('identificar.html')
+    return render_template('identificar.html') # MAP Biomas e GBIF
 
 @identificar_bp.route("/identificar_insetos", methods = ['GET', 'POST'])
 @login_required
