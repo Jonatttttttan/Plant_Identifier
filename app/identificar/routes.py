@@ -66,13 +66,7 @@ def identificar():
                 regiao_nome = dados_municipio['microrregiao']['mesorregiao']['UF']['regiao']['nome']
                 cod_ibge = dados_municipio['id']
 
-                # População
-                '''url_pop = "https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/" + municipio_id
-                resp_pop = requests.get(url_pop)
-                print("Resposta do pop:", str(resp_pop.status_code) + " | " + resp_pop.text)
-                dados_pop = resp_pop.json()
-                populacao = dados_pop['projecao']['populacao']
-                print("Inseriu")'''
+
                 return render_template('resultado_identificacao.html', especie=especie, descricao=descricao, imagem=filepath, nome_municipio=nome_municipio, estado_nome=estado_nome, regiao_nome=regiao_nome,cod_ibge=cod_ibge)
 
             else:
@@ -221,5 +215,64 @@ def identificar_pg():
             return redirect(url_for('identificar.identificar_pg'))
     return render_template('identificar_health.html')
 
+# Identificação de aves
+'''@identificar_bp.route("/identificar_plantas2", methods=['GET','POST'])
+@login_required
+def identificar_aves():
+    if request.method == 'POST':
+        imagem = request.files['imagem']
+        if imagem and allowed_file(imagem.filename):
+            filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], secure_filename(imagem.filename))
+            imagem.save(filepath)
+           
+            with open(filepath, 'rb') as img_i:
+                img_base64 = base64.b64encode(img_i.read()).decode('utf-8')
+            
+            api_key = os.getenv('PLANT_NET_API_KEY')
+            url = 'https://my-api.plantnet.org/v2/identify/all?api-key=' + api_key
 
+            with open(filepath, 'rb') as img_file:
+                print(img_file)
+                files = [('images', (secure_filename(imagem.filename), img_file,'image/jpeg'))]
+                data = {
+                    'organs':'auto'
+
+                }
+
+
+                response = requests.post(url, files=files, data=data)
+            print("Response status code:", response.status_code)
+            print(response.text)
+
+            # Visualizar resposta
+
+            if response.status_code == 200 or response.status_code == 201:
+                resultado = response.json()
+                # Verifica se há resultados
+                if resultado['results']:
+                    melhor = resultado['results'][0]
+                    especie = melhor['species']
+                    nome_cientifico = especie.get('scientificNameWithoutAuthor', 'Desconhecido')
+                    nome_comum = especie.get('commonNames', ['Desconhecido'])[0]
+
+                    confianca = melhor['score'] * 100
+                    return render_template('resultado_aves.html',
+                                           nome_comum=nome_comum,
+                                           nome_cientifico=nome_cientifico,
+                                           confianca=round(confianca,1))
+                else:
+                    flash('Falha ao identificar imagem')
+                    print("Falha nos reults")
+            else:
+                flash("Falha na API")
+                print("Falha na API")
+            return redirect(url_for('identificar.identificar_plantas2'))
+
+        else:
+            flash("Falha ao identifica imagem")
+            return redirect(url_for('identificar.identificar_plantas2'))
+
+    else:
+        return render_template('identificar_aves.html')
+'''
 

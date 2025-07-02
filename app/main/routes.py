@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
-from flask_login import login_required
+from flask_login import login_required, current_user
 from ..db import get_db_connection
 import os
 from werkzeug.utils import secure_filename
@@ -20,14 +20,18 @@ def index():
     page = request.args.get('page', 1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
+    print('offset', offset)
+
 
     conn = get_db_connection();
     cursor = conn.cursor(dictionary=True)
-
-    cursor.execute('SELECT COUNT(*) as total FROM angiospermas')
+    id_usuario = current_user.id
+    cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s', (id_usuario,))
     total_rows = cursor.fetchone()['total']
     total_pages = (total_rows + per_page-1) // per_page
-    cursor.execute("SELECT * FROM angiospermas LIMIT %s OFFSET %s", (per_page, offset))
+    print('per_page', per_page)
+
+    cursor.execute("SELECT * FROM angiospermas WHERE user_id = %s LIMIT %s OFFSET %s", (id_usuario, per_page, offset))
 
     plantas = cursor.fetchall()
     cursor.close()
@@ -73,7 +77,8 @@ def adicionar():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao) VALUES (%s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0]))
+        id_usuario = current_user.id
+        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0], id_usuario))
         planta_id = cursor.lastrowid
 
         # Agora, salva as imagens
@@ -144,6 +149,8 @@ def info(id):
 
 @main_bp.route('/home')
 def home():
+
+    
     return render_template('Home.html')
 
 @main_bp.route('/ecologia_home')

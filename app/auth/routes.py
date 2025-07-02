@@ -23,6 +23,7 @@ def login():
         if user and check_password_hash(user['password'], password):
             user_obj = User(id=user['id'], username=user['username'], password=user['password'])
             login_user(user_obj)
+            id = user['id']
 
             #session['user_id'] = user['id']
            # session['username'] = user['username']
