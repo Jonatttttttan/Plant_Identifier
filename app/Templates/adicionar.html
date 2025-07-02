@@ -14,8 +14,38 @@
         <option value="seguro">Sem risco de extinção</option>
     </select><br>
     <p>Imagem: <input type="file" name="imagens" multiple></p>
-    <p> <input type="submit" value="Adicionar"></p>
+
+    <!-- CAMPOS ESCONDIDOS DE LOCALIZAÇÃO -->
+    <input type="hidden" name="latitude" id="latitude">
+    <input type="hidden" name="longitude" id="longitude">
+
+    <p> <input type="submit" value="Adicionar" id="botao-enviar" disabled></p>
 </form>
 <a href="{{ url_for('main.index') }}">Voltar</a>
+
+
+<script>
+    const botao = document.getElementById('botao-enviar');
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        console.log('teste')
+
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lon;
+
+        botao.disabled = false;
+        }, function(error) {
+          console.warn('Geolocalização não permitida:', error.message);
+          botao.disabled = false;
+          });
+        } else {
+            console.warn('Geolocalização não suportada neste navegador.');
+            botao.disabled = false;
+            }
+</script>
+
 
 {% endblock %}

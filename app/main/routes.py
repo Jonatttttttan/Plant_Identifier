@@ -70,6 +70,8 @@ def adicionar():
         habitat = request.form['habitat']
         descricao = request.form['descricao']
         situacao = request.form.getlist('situacao')
+        latitude = request.form['latitude'] if len(request.form['latitude']) > 0 else None
+        longitude = request.form['longitude'] if len(request.form['longitude'])>0 else None
 
         lista = {"espécie" : especie, "familia" : familia, "habitat":habitat}
         excecao = list(map(lambda x:  "Campo obrigatório-" + x if not lista[x] else "-" + x ,lista.keys()))
@@ -91,10 +93,11 @@ def adicionar():
             imagem.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             imagem_filename = filename'''
 
+        print('latitude:', latitude)
         conn = get_db_connection()
         cursor = conn.cursor()
         id_usuario = current_user.id
-        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao, user_id) VALUES (%s, %s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0], id_usuario))
+        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao, user_id, latitude, longitude) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0], id_usuario, latitude, longitude))
         planta_id = cursor.lastrowid
 
         # Agora, salva as imagens
@@ -193,6 +196,16 @@ def gerar_relatorio_pdf():
     response.headers['Content-Disposition'] = 'attachment; filename=relatorio.pdf'
     return response
 
+@main_bp.route('/mapa')
+@login_required
+def mapa():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute('SELECT especie, latitude, longitude FROM angiospermas WHERE user_id = %s AND latitude IS NOT NULL AND longitude IS NOT NULL', (current_user.id,))
+    pontos = cursor.fetchall()
+    print(pontos)
+    cursor.close()
+    return render_template('mapa.html', pontos=pontos)
 
 
 
