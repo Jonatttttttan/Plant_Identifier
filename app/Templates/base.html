@@ -23,9 +23,14 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.home') }}">Home</a>
                 </li>
+                <li class="nav-tem">
+                    <a class="btn btn-danger ms2" href="{{ url_for('main.gerar_relatorio_pdf') }}">
+                        <i class="bi bi-file-eamark-pdf-fill"></i> Relatório</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.adicionar') }}">Adicionar</a>
                 </li>
+
 
                 <li class="nav-item dropdown">
                      <a class="nav-link dropdown-toggle" href="#" id="identificarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

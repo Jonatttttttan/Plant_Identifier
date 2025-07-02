@@ -5,6 +5,11 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="text-success">Exibição de Angiospermas</h1>
 
+        <form class="d-flex" method="get" action="{{ url_for('main.index') }}">
+            <input class="form-control me2" type="search" placeholder="Pesquisar..." name="q" value="{{ request.args.get('q', '') }}">
+            <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </form>
+
     </div>
 
 

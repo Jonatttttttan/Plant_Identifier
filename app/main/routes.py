@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response
 from flask_login import login_required, current_user
 from ..db import get_db_connection
 import os
+import io
 from werkzeug.utils import secure_filename
-
+from xhtml2pdf import pisa
+#pip install xhtml2pdf
 
 
 
@@ -18,6 +20,7 @@ def allowed_file(filename):
 @login_required
 def index():
     page = request.args.get('page', 1, type=int)
+    q = request.args.get('q', '')
     per_page = 10
     offset = (page - 1) * per_page
     print('offset', offset)
@@ -26,14 +29,27 @@ def index():
     conn = get_db_connection();
     cursor = conn.cursor(dictionary=True)
     id_usuario = current_user.id
-    cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s', (id_usuario,))
-    total_rows = cursor.fetchone()['total']
-    total_pages = (total_rows + per_page-1) // per_page
-    print('per_page', per_page)
 
-    cursor.execute("SELECT * FROM angiospermas WHERE user_id = %s LIMIT %s OFFSET %s", (id_usuario, per_page, offset))
+    # Se houver pesquisa
+    if q:
 
-    plantas = cursor.fetchall()
+        cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s)', (id_usuario, q, q, q))
+        total_rows = cursor.fetchone()['total']
+
+        total_pages = (total_rows + per_page - 1) // per_page
+        query = 'SELECT * FROM angiospermas WHERE user_id - %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s) LIMIT %s OFFSET %s'
+        cursor.execute(query, (id_usuario, q, q, q, per_page, offset))
+        plantas = cursor.fetchall()
+    else:
+        cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s', (id_usuario,))
+
+        total_rows = cursor.fetchone()['total']
+        total_pages = (total_rows + per_page-1) // per_page
+        print('per_page', per_page)
+
+        cursor.execute("SELECT * FROM angiospermas WHERE user_id = %s LIMIT %s OFFSET %s", (id_usuario, per_page, offset))
+
+        plantas = cursor.fetchall()
     cursor.close()
     conn.close()
     print(request.endpoint)
@@ -156,6 +172,27 @@ def home():
 @main_bp.route('/ecologia_home')
 def ecologia_home():
     return render_template('/ecologia_home.html')
+
+@main_bp.route('/relatorio_pdf')
+@login_required
+def gerar_relatorio_pdf():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    user_id = current_user.id
+    cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s', (user_id,))
+    dados = cursor.fetchall()
+
+    html = render_template('relatorio_pdf.html', dados=dados)
+
+    resultado = io.BytesIO()
+    pisa.CreatePDF(src=html, dest=resultado)
+
+    # Envia como resposta para download
+    response = make_response(resultado.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=relatorio.pdf'
+    return response
+
 
 
 
