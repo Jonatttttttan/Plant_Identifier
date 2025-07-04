@@ -5,6 +5,9 @@ import os
 import io
 from werkzeug.utils import secure_filename
 from xhtml2pdf import pisa
+
+from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
+from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
 #pip install xhtml2pdf
 
 
@@ -164,7 +167,9 @@ def info(id):
     cursor.close()
     conn.close()
 
-    return render_template('informacoes.html', planta=planta, imagens=imagens)
+    curiosidades = wiki(planta['nome_popular'])
+
+    return render_template('informacoes.html', planta=planta, imagens=imagens, curiosidades=curiosidades)
 
 @main_bp.route('/home')
 def home():
@@ -206,6 +211,37 @@ def mapa():
     print(pontos)
     cursor.close()
     return render_template('mapa.html', pontos=pontos)
+
+@main_bp.route('/CuriosidadesAnimais', methods=['GET', 'POST'])
+@login_required
+def curiosidades_animais():
+    if request.method == "POST":
+        nome = request.form["nome"]
+        print(nome)
+        taxonKey = buscar_takonkey_gbif(nome)
+        print(taxonKey)
+        if taxonKey != None:
+            curiosidades = buscar_ocorrencias_gbif(taxonKey)
+            print(curiosidades)
+            return render_template('resultado_curiosidades_animais.html', curiosidades=curiosidades, nome=nome)
+        else:
+            return redirect(url_for('main.curiosidades_animais'))
+    return render_template('curiosidades_animais.html')
+
+@main_bp.route('/distribuicao', methods=['GET', 'POST'])
+@login_required
+def distribuicao_especie():
+    if request.method == 'POST':
+        nome = request.form['nome']
+        taxonKey = buscar_takonkey_gbif(nome)
+        if taxonKey:
+            ocorrencias = buscar_ocorrencias_gbif(taxonKey)
+            return render_template('resultado_distribuicao.html', nome=nome, ocorrencias=ocorrencias)
+        else:
+            flash("Espécie não encontrada.")
+            return redirect(url_for('main.distribuicao_especie'))
+    return render_template('form_distribuicao.html')
+
 
 
 

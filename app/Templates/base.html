@@ -23,28 +23,23 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.home') }}">Home</a>
                 </li>
-                <li class="nav-tem">
-                    <a class="btn btn-danger ms2" href="{{ url_for('main.gerar_relatorio_pdf') }}">
-                        <i class="bi bi-file-eamark-pdf-fill"></i> Relatório</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.adicionar') }}">Adicionar</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('main.mapa') }}">Mapa</a>
-                </li>
+
+
+
 
 
                 <li class="nav-item dropdown">
                      <a class="nav-link dropdown-toggle" href="#" id="identificarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                         Ecologia
+                         Ecologia/Zoologia
                      </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="identificarDropdown">
-                        <li><a class="dropdown-item text-success fw-bold" href="{{ url_for('main.adicionar') }}">Adicionar plantas</a> </li>
+
                         <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar') }}">IA Plantas</a> </li>
                         <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar_insetos') }}">IA Insetos</a></li>
                         <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar_cogumelos') }}">IA Cogumelos</a></li>
                         <li><a class="dropdown-item text-danger" href="{{ url_for('identificar.identificar_pg') }}">IA Pragas</a></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('main.curiosidades_animais') }}">Buscar Animal/Planta</a></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('main.distribuicao_especie') }}">Ver Distribuição de Espécies</a></li>
 
                     </ul>
                 </li>

@@ -8,6 +8,23 @@
 <p><strong class="d-block p-2 text-bg-dark">Nome Popular: {{ planta['nome_popular'] }}</strong></p>
 <p><strong class="d-block p-2 text-bg-dark">Habitat: {{ planta['habitat'] }}</strong></p>
 
+<h3>Curiosidades:</h3>
+{% if curiosidades %}
+<div class="card mt-4">
+    <div class="card-header">Curiosidades (Fonte: Wikipédia)</div>
+    <div class="card-body">
+        {% if curiosidades.thumbnail %}
+          <img src="{{ curiosidades.thumbnail.source }}" class="img-fluid mb-2" style="max-wigth:200px;">
+        {% endif %}
+        <p>{{ curiosidades.extracy }}</p>
+        <a href="{{ curiosidades.content_urls.desktop.page }}" target="_blank" class="btn btn-primary btn-sm">Ver mais na Wikipédia</a>
+        <p><strong>Informações:</strong> {{ curiosidades.extract }}</p>
+    </div>
+</div>
+{% else %}
+  <p>Nenhuma curiosidade encontrada na Wikipédia.</p>
+{% endif %}
+
 <H3>Imagens:</H3>
 {% for imagem in imagens %}
 <figure>
@@ -20,6 +37,7 @@
 {% else %}
 <h3>Não há planta para exibir</h3>
 {% endif %}
+
 
 <a href="{{ url_for('main.index') }}" class="link-offset-2 link-underline link-underline-opacity-10">Voltar</a>
 
