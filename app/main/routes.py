@@ -1,3 +1,5 @@
+from itertools import groupby
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response
 from flask_login import login_required, current_user
 from ..db import get_db_connection
@@ -36,12 +38,13 @@ def index():
     # Se houver pesquisa
     if q:
 
-        cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s)', (id_usuario, q, q, q))
+        print(q)
+        cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s OR grupo LIKE %s)', (id_usuario, q, q, q, q))
         total_rows = cursor.fetchone()['total']
 
         total_pages = (total_rows + per_page - 1) // per_page
-        query = 'SELECT * FROM angiospermas WHERE user_id - %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s) LIMIT %s OFFSET %s'
-        cursor.execute(query, (id_usuario, q, q, q, per_page, offset))
+        query = 'SELECT * FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s OR grupo LIKE %s) LIMIT %s OFFSET %s'
+        cursor.execute(query, (id_usuario, q, q, q,q, per_page, offset))
         plantas = cursor.fetchall()
     else:
         cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s', (id_usuario,))
@@ -73,6 +76,7 @@ def adicionar():
         habitat = request.form['habitat']
         descricao = request.form['descricao']
         situacao = request.form.getlist('situacao')
+        grupo = request.form.getlist('grupo')
         latitude = request.form['latitude'] if len(request.form['latitude']) > 0 else None
         longitude = request.form['longitude'] if len(request.form['longitude'])>0 else None
 
@@ -100,7 +104,7 @@ def adicionar():
         conn = get_db_connection()
         cursor = conn.cursor()
         id_usuario = current_user.id
-        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao, user_id, latitude, longitude) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0], id_usuario, latitude, longitude))
+        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao, user_id, latitude, longitude, grupo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0], id_usuario, latitude, longitude, grupo[0]))
         planta_id = cursor.lastrowid
 
         # Agora, salva as imagens
@@ -181,13 +185,19 @@ def home():
 def ecologia_home():
     return render_template('/ecologia_home.html')
 
-@main_bp.route('/relatorio_pdf')
+@main_bp.route('/relatorio_pdf', methods = ['GET'])
 @login_required
 def gerar_relatorio_pdf():
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     user_id = current_user.id
-    cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s', (user_id,))
+    grupo = request.args.getlist('grupo')
+    print(grupo)
+    if grupo:
+        cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s AND grupo = %s', (user_id, grupo[0]))
+    else:
+        cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s', (user_id,))
     dados = cursor.fetchall()
 
     html = render_template('relatorio_pdf.html', dados=dados)

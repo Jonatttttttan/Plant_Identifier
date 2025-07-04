@@ -3,17 +3,29 @@
 {% block content %}
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text-success">Exibição de Angiospermas</h1>
+        <h1 class="text-success">Exibição de Organismos</h1>
         <ul class="navbar-van">
             <li class="nav-item">
-                    <a class="btn btn-danger ms2" href="{{ url_for('main.mapa') }}">Mapa de plantas</a>
+                    <a class="btn btn-danger ms2" href="{{ url_for('main.mapa') }}">Mapa de organismos</a>
             </li><br>
             <li class="nav-item">
-                    <a class="btn btn-danger ms2" href="{{ url_for('main.adicionar') }}">Adicionar Plantas</a>
+                    <a class="btn btn-danger ms2" href="{{ url_for('main.adicionar') }}">Adicionar</a>
             </li><br>
-            <li class="nav-item">
-                    <a class="btn btn-danger ms2" href="{{ url_for('main.gerar_relatorio_pdf') }}">
-                        <i class="bi bi-file-eamark-pdf-fill"></i> Relatório das Minhas Plantas</a>
+            <li>
+
+            <form class="row g-3 align-items-center" method="get" action="{{ url_for('main.gerar_relatorio_pdf') }}">
+                <div class="col-auto">
+                    <label for="grupo" class="form-label">Selecione um grupo</label>
+                    <select class="form-select" name="grupo" multiple size="4">
+                       <option value="planta">Planta</option>
+                       <option value="artropode">Artrópodes</option>
+                       <option value="animal">Animal</option>
+                       <option value="outros">Outros</option>
+                    </select>
+                </div>
+
+                <input  type="submit" value="Gerar Relatório">
+            </form>
             </li>
         </ul>
 
@@ -30,24 +42,26 @@
     <table class="table table-hover align-middle shadow-sm rounded">
         <thead class="table-dark text-center">
         <tr>
-            <th>ID</th>
+
             <th>Espécie</th>
             <th>Família</th>
             <th>Nome Popular</th>
             <th>Habitat</th>
             <th>Situação</th>
+            <th>Grupo</th>
             <th>Ações</th>
             <th>Informações</th>
         </tr></thead>
         <tbody>
         {% for planta in plantas %}
         <tr class="text-center">
-            <td>{{ planta.id }}</td>
+
             <td>{{ planta.especie }}</td>
             <td>{{ planta.familia }}</td>
             <td>{{ planta.nome_popular }}</td>
             <td>{{ planta.habitat }}</td>
             <td>{{ planta.situacao }}</td>
+            <td>{{ planta.grupo }}</td>
             <td>
                 <a href="{{ url_for('main.editar', id=planta.id) }}" class="btn btn-sm btn-outline-primary me-2">Editar</a>
                 <form action="{{ url_for('main.deletar', id=planta.id) }}" method="post" class="d-inline">
