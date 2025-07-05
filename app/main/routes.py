@@ -7,6 +7,8 @@ import os
 import io
 from werkzeug.utils import secure_filename
 from xhtml2pdf import pisa
+import openai
+from openai import OpenAI
 
 from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
 from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
@@ -17,6 +19,9 @@ from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
 main_bp = Blueprint('main', __name__)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+OPENAI_KEY = os.getenv('OPEN_AI_API_KEY')
+client = OpenAI(api_key=OPENAI_KEY)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -80,12 +85,12 @@ def adicionar():
         latitude = request.form['latitude'] if len(request.form['latitude']) > 0 else None
         longitude = request.form['longitude'] if len(request.form['longitude'])>0 else None
 
-        lista = {"espécie" : especie, "familia" : familia, "habitat":habitat}
+        lista = {"espécie" : especie, "habitat":habitat}
         excecao = list(map(lambda x:  "Campo obrigatório-" + x if not lista[x] else "-" + x ,lista.keys()))
         for x in excecao:
             if x.split("-")[0] ==  "Campo obrigatório":
                 flash("Campo obrigatório:" + lista[x.split("-")[-1]])
-                return redirect(url_for('adicionar'))
+                return redirect(url_for('main.adicionar'))
 
 
 
@@ -252,6 +257,35 @@ def distribuicao_especie():
             return redirect(url_for('main.distribuicao_especie'))
     return render_template('form_distribuicao.html')
 
+
+@main_bp.route('/descricao_organismo', methods=['GET', 'POST'])
+@login_required
+def descricao_organismo():
+    descricao = None
+    erro = None
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+
+        if not nome:
+            flash("Por favor, digite o nome de um animal ou planta.")
+            return redirect(url_for('main.descricao_organismo'))
+
+        prompt = "Por favor, forneça uma descrição detalhada sobre o organismo chamado " + nome +"Incluindo características, habitat, alimentação e curiosidades."
+        try:
+            resposta = client.chat.completions.create(
+                model = 'gpt-4o-mini',
+                messages = [
+                    {'role': 'system', 'content': 'Você é um assistente especializado em biologia'},
+                    {'role': 'user', 'content': prompt}
+                ],
+                max_tokens=500,
+                temperature=0.7
+            )
+
+            descricao = resposta.choices[0].message.content
+        except Exception as e:
+            erro = str(e)
+    return render_template('descricao_organismo.html', descricao=descricao, erro=erro)
 
 
 
