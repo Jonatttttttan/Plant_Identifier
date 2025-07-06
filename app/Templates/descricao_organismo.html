@@ -18,5 +18,14 @@
   <p>{{ descricao|safe }}</p>
 {% endif %}
 
+{% if cont > 2 %}
+{% for o in range(0, 5) %}
+  {% if ocorrencias[o].imagem %}
+    <img src="{{ ocorrencias[o].imagem }}" alt="Imagem da ocorrência" width="300">
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+
 {% endblock %}
 

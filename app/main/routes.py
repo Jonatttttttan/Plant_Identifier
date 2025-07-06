@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 from xhtml2pdf import pisa
 import openai
 from openai import OpenAI
+from dotenv import load_dotenv
+import re
 
 from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
 from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
@@ -20,8 +22,10 @@ main_bp = Blueprint('main', __name__)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-OPENAI_KEY = os.getenv('OPEN_AI_API_KEY')
-client = OpenAI(api_key=OPENAI_KEY)
+load_dotenv()
+api_key = os.getenv('OPENAI_API_KEY')
+
+client = OpenAI(api_key=api_key)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -270,7 +274,7 @@ def descricao_organismo():
             flash("Por favor, digite o nome de um animal ou planta.")
             return redirect(url_for('main.descricao_organismo'))
 
-        prompt = "Por favor, forneça uma descrição detalhada sobre o organismo chamado " + nome +"Incluindo características, habitat, alimentação e curiosidades."
+        prompt = "Por favor, forneça uma descrição detalhada sobre o organismo chamado " + nome +"Incluindo características, habitat, alimentação, curiosidades e escreva o nome científico SEMPRE exatamente assim: Espécie:...."
         try:
             resposta = client.chat.completions.create(
                 model = 'gpt-4o-mini',
@@ -282,10 +286,25 @@ def descricao_organismo():
                 temperature=0.7
             )
 
+
             descricao = resposta.choices[0].message.content
+
         except Exception as e:
             erro = str(e)
-    return render_template('descricao_organismo.html', descricao=descricao, erro=erro)
+    especie = list(re.findall("[Ee]sp[eé]cie: ?[*]{,2}? ?[A-z]* [A-z]*", descricao)) if descricao else None
+    especie2 = especie[0].split(":")[-1].replace("*","").strip() if especie else None
+    print("espécie: ", especie2)
+
+    ocorrencias = ["-"]
+    if especie2:
+        taxonKey = buscar_takonkey_gbif(especie2)
+        if taxonKey:
+            ocorrencias = buscar_ocorrencias_gbif(taxonKey)
+
+        else:
+            flash("Espécie não encontrada.")
+
+    return render_template('descricao_organismo.html', descricao=descricao, erro=erro, ocorrencias=ocorrencias, cont=len(ocorrencias))
 
 
 
