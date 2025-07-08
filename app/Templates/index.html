@@ -2,7 +2,8 @@
 
 {% block content %}
 <div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+   <!-- <div class="d-flex justify-content-between align-items-center mb-4">
+
         <h1 class="text-success">Exibição de Organismos</h1>
         <ul class="navbar-van">
             <li class="nav-item">
@@ -34,10 +35,51 @@
             <button class="btn btn-outline-success" type="submit">Buscar</button>
         </form>
 
+    </div>-->
+<a class="btn btn-danger ms2" href="{{ url_for('main.mapa') }}">Mapa de organismos</a>
+    <a class="btn btn-danger ms2" href="{{ url_for('main.adicionar') }}">Adicionar</a>
+ <form class="row g-3 align-items-center" method="get" action="{{ url_for('main.gerar_relatorio_pdf') }}">
+                <div class="col-auto">
+                    <label for="grupo2" class="form-label">Selecione um grupo</label>
+                    <select class="form-select" name="relatorio">
+                        <option value="">Todos</option>
+                        <option value="planta" {% if grupo_atual == planta %}selected{% endif %}>Planta</option>
+                        <option value="artropode" {% if grupo_atual == artropode %}selected{% endif %}>Artrópode</option>
+                        <option value="animal" {% if grupo_atual == animal %}selected{% endif %}>Animal</option>
+                        <option value="outros" {% if grupo_atual == outros %}selected{% endif %}>Outros</option>
+                    </select>
+                </div>
+                <input  type="submit" value="Gerar Relatório">
+
+ </form>
+<form class="row g-3 mb-4" method="get" action="{{ url_for('main.index') }}">
+    <div class="col-md-4">
+        <label for="grupo" class="form-label">Grupo</label>
+        <select class="form-select" name="grupo">
+            <option value="">Todos</option>
+            <option value="planta" {% if grupo_atual == planta %}selected{% endif %}>Planta</option>
+            <option value="artropode" {% if grupo_atual == artropode %}selected{% endif %}>Artrópode</option>
+            <option value="animal" {% if grupo_atual == animal %}selected{% endif %}>Animal</option>
+            <option value="outros" {% if grupo_atual == outros %}selected{% endif %}>Outros</option>
+        </select>
     </div>
 
 
 
+    <div class="col-md-4">
+        <label for="localizacao" class="form-label">Localização</label>
+        <select class="form-select" name="localizacao">
+            <option value="">Todas</option>
+            {% for loc in localizacoes %}
+                <option value="{{ loc }}" {% if localizacao_atual == loc %}selected{% endif %}>{{ loc }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-4 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+    </div>
+</form>
 <div class="table-responsive">
     <table class="table table-hover align-middle shadow-sm rounded">
         <thead class="table-dark text-center">
@@ -47,6 +89,7 @@
             <th>Família</th>
             <th>Nome Popular</th>
             <th>Habitat</th>
+            <th>Localizacao</th>
             <th>Situação</th>
             <th>Grupo</th>
             <th>Ações</th>
@@ -60,6 +103,7 @@
             <td>{{ planta.familia }}</td>
             <td>{{ planta.nome_popular }}</td>
             <td>{{ planta.habitat }}</td>
+            <td>{{ planta.localizacao }}</td>
             <td>{{ planta.situacao }}</td>
             <td>{{ planta.grupo }}</td>
             <td>
@@ -83,21 +127,24 @@
     <ul class="pagination justify-content-center mt-4">
         {% if page > 1 %}
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('main.index', page=page - 1) }}">Anterior</a>
+            <a class="page-link" href="{{ url_for('main.index', page=page - 1, grupo=grupo_atual, localizacao=localizacao_atual, q=request.args.get('q')) }}">Anterior</a>
+
 
         </li>
         {% endif %}
 
         {% for p in range(1, total_pages + 1) %}
         <li class="page-item {% if p == page %}active{% endif %}">
-            <a class="page-link" href="{{ url_for('main.index', page=p) }}">{{ p }}</a>
+            <a class="page-link" href="{{ url_for('main.index', page=p, grupo=grupo_atual, localizacao=localizacao_atual, q=request.args.get('q')) }}">{{ p }}</a>
+
 
         </li>
         {% endfor %}
 
         {% if page < total_pages %}
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('main.index', page=page + 1) }}">Próxima</a>
+            <a class="page-link" href="{{ url_for('main.index', page=page + 1, grupo=grupo_atual, localizacao=localizacao_atual, q=request.args.get('q')) }}">Próximo</a>
+
 
         </li>
         <{% endif %}

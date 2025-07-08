@@ -44,16 +44,33 @@ def index():
     cursor = conn.cursor(dictionary=True)
     id_usuario = current_user.id
 
-    # Se houver pesquisa
+    grupo = request.args.get('grupo')
+    localizacao = request.args.get('localizacao')
+    filtros = ['user_id = %s']
+    params = [id_usuario]
+
+    print("%", q)
     if q:
+        filtros.append('(especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s OR grupo LIKE %s OR localizacao LIKE %s)')
+        for _ in range(5):
+            params.append("%",q)
+    if grupo:
+        filtros.append('grupo = %s')
+        params.append(grupo)
+
+    if localizacao:
+        filtros.append('localizacao = %s')
+        params.append(localizacao)
+
+    '''    if q:
 
         print(q)
-        cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s OR grupo LIKE %s)', (id_usuario, q, q, q, q))
+        cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s OR grupo LIKE %s OR localizacao LIKE %s)', (id_usuario, q, q, q, q, q))
         total_rows = cursor.fetchone()['total']
 
         total_pages = (total_rows + per_page - 1) // per_page
-        query = 'SELECT * FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s OR grupo LIKE %s) LIMIT %s OFFSET %s'
-        cursor.execute(query, (id_usuario, q, q, q,q, per_page, offset))
+        query = 'SELECT * FROM angiospermas WHERE user_id = %s AND ( especie LIKE %s OR nome_popular LIKE %s OR familia LIKE %s OR grupo LIKE %s OR localizacao LIKE %s) LIMIT %s OFFSET %s'
+        cursor.execute(query, (id_usuario, q, q, q,q,q, per_page, offset))
         plantas = cursor.fetchall()
     else:
         cursor.execute('SELECT COUNT(*) as total FROM angiospermas WHERE user_id = %s', (id_usuario,))
@@ -64,7 +81,27 @@ def index():
 
         cursor.execute("SELECT * FROM angiospermas WHERE user_id = %s LIMIT %s OFFSET %s", (id_usuario, per_page, offset))
 
-        plantas = cursor.fetchall()
+        plantas = cursor.fetchall()'''
+
+
+
+    # Se houver pesquisa
+    where_clause = ' AND '.join(filtros)
+    count_query =   'SELECT COUNT(*) as total FROM angiospermas WHERE ' + where_clause
+    cursor.execute(count_query, tuple(params))
+    total_rows = cursor.fetchone()['total']
+    total_pages = (total_rows + per_page - 1) // per_page
+
+    params_with_limit = params + [per_page, offset]
+    query = 'SELECT * FROM angiospermas WHERE ' + where_clause + ' LIMIT %s OFFSET %s'
+    cursor.execute(query, tuple(params_with_limit))
+    plantas = cursor.fetchall()
+
+    cursor.execute('SELECT DISTINCT localizacao FROM angiospermas WHERE user_id = %s AND localizacao IS NOT NULL', (id_usuario,))
+    localizacoes = [row['localizacao'] for row in cursor.fetchall()]
+
+
+
     cursor.close()
     conn.close()
     print(request.endpoint)
@@ -72,7 +109,15 @@ def index():
         'index.html',
         plantas=plantas,
         page = page,
-        total_pages = total_pages
+        total_pages = total_pages,
+        localizacoes=localizacoes,
+        grupo_atual=grupo,
+        localizacao_atual=localizacao,
+        q=q,
+        planta='planta',
+        animal='animal',
+        artropode='artropode',
+        outros='outros'
     )
 
 @main_bp.route('/adicionar', methods=['GET', 'POST'])
@@ -83,6 +128,7 @@ def adicionar():
         familia = request.form['familia']
         nome_popular = request.form['nome_popular']
         habitat = request.form['habitat']
+        localizacao = request.form['localizacao']
         descricao = request.form['descricao']
         situacao = request.form.getlist('situacao')
         grupo = request.form.getlist('grupo')
@@ -113,7 +159,7 @@ def adicionar():
         conn = get_db_connection()
         cursor = conn.cursor()
         id_usuario = current_user.id
-        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, descricao, situacao, user_id, latitude, longitude, grupo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat, descricao, situacao[0], id_usuario, latitude, longitude, grupo[0]))
+        cursor.execute('INSERT INTO angiospermas (especie, familia, nome_popular, habitat, localizacao, descricao, situacao, user_id, latitude, longitude, grupo) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', (especie, familia, nome_popular, habitat,localizacao, descricao, situacao[0], id_usuario, latitude, longitude, grupo[0]))
         planta_id = cursor.lastrowid
 
         # Agora, salva as imagens
@@ -143,10 +189,11 @@ def editar(id):
         familia = request.form['familia']
         nome_popular = request.form['nome_popular']
         habitat = request.form['habitat']
+        localizacao = request.form['localizacao']
 
         cursor.execute(
-            'UPDATE angiospermas SET especie = %s, familia = %s, nome_popular = %s, habitat = %s WHERE id = %s',
-            (especie, familia, nome_popular, habitat, id))
+            'UPDATE angiospermas SET especie = %s, familia = %s, nome_popular = %s, habitat = %s, localizacao = %s WHERE id = %s',
+            (especie, familia, nome_popular, habitat,localizacao, id))
         conn.commit()
         cursor.close()
         conn.close()
@@ -201,7 +248,7 @@ def gerar_relatorio_pdf():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     user_id = current_user.id
-    grupo = request.args.getlist('grupo')
+    grupo = request.args.getlist('relatorio')
     print(grupo)
     if grupo:
         cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s AND grupo = %s', (user_id, grupo[0]))
