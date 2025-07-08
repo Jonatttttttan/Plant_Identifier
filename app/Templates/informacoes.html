@@ -38,7 +38,21 @@
 <h3>Não há planta para exibir</h3>
 {% endif %}
 
+<h5>Comentários</h5>
+{% for c in comentarios %}
+<div class="card my-2 p-2">
+    <strong>{{ c.nome }}</strong> <small class="text-muted">{{ c.data }}</small>
+    <p>{{ c.texto }}</p>
+</div>
+{% endfor %}
 
+<form method="post" action="{{ url_for('main.comentar', especie_id=planta.id) }}">
+    <div class="mb-3">
+        <textarea name="comentario" class="form-control" rows="3" required placeholder="Digite seu comentário..."></textarea>
+
+    </div>
+    <button type="submit" class="btn btn-primary">Comentar</button>
+</form>
 <a href="{{ url_for('main.index') }}" class="link-offset-2 link-underline link-underline-opacity-10">Voltar</a>
 
 {% endblock %}

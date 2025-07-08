@@ -224,12 +224,15 @@ def info(id):
 
     cursor.execute('SELECT * FROM imagens_angiospermas WHERE planta_id = %s', (id,))
     imagens = cursor.fetchall()
+
+    cursor.execute('SELECT c.texto, c.data, u.username FROM comentarios2 c JOIN usuarios u ON c.usuario_id = u.id WHERE c.especie_id = %s ORDER BY c.data DESC', (id,))
+    comentarios = cursor.fetchall()
     cursor.close()
     conn.close()
 
     curiosidades = wiki(planta['nome_popular'])
 
-    return render_template('informacoes.html', planta=planta, imagens=imagens, curiosidades=curiosidades)
+    return render_template('informacoes.html', planta=planta, imagens=imagens, curiosidades=curiosidades, comentarios=comentarios)
 
 @main_bp.route('/home')
 def home():
@@ -254,7 +257,7 @@ def gerar_relatorio_pdf():
 
     query = [ ' AND ' +x+'@= %s' for x in lista]
 
-    l = lambda c: not c.contains('AND @=')
+    l = lambda c: c if not 'AND @=' in c else ''
     q = list(map(lambda e: e.replace('@',''),list(map(l, query))))
     print(q)
 
@@ -271,9 +274,11 @@ def gerar_relatorio_pdf():
         print("entrou")
 
 
+    cursor.execute('SELECT * FROM imagens_angiospermas')
+    imagens = cursor.fetchall()
+    caminho = 'file:///' + os.getcwd().replace('\\main','').replace('\\','/') + '/app/static/uploads/'
 
-
-    html = render_template('relatorio_pdf.html', dados=dados)
+    html = render_template('relatorio_pdf.html', dados=dados, imagens=imagens, caminho=caminho)
 
     resultado = io.BytesIO()
     pisa.CreatePDF(src=html, dest=resultado)
@@ -370,5 +375,16 @@ def descricao_organismo():
 
     return render_template('descricao_organismo.html', descricao=descricao, erro=erro, ocorrencias=ocorrencias, cont=len(ocorrencias))
 
-
+@main_bp.route('/comentar/<int:especie_id>', methods=['POST'])
+@login_required
+def comentar(especie_id):
+    texto = request.form['comentario']
+    usuario_id = current_user.id
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO comentarios2 (especie_id, usuario_id, texto) VALUES (%s, %s, %s)', (especie_id, usuario_id, texto))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('main.info', id=especie_id))
 
