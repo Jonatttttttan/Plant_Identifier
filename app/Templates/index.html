@@ -41,7 +41,7 @@
  <form class="row g-3 align-items-center" method="get" action="{{ url_for('main.gerar_relatorio_pdf') }}">
                 <div class="col-auto">
                     <label for="grupo2" class="form-label">Selecione um grupo</label>
-                    <select class="form-select" name="relatorio">
+                    <select class="form-select" name="grupo">
                         <option value="">Todos</option>
                         <option value="planta" {% if grupo_atual == planta %}selected{% endif %}>Planta</option>
                         <option value="artropode" {% if grupo_atual == artropode %}selected{% endif %}>Artrópode</option>
@@ -49,7 +49,17 @@
                         <option value="outros" {% if grupo_atual == outros %}selected{% endif %}>Outros</option>
                     </select>
                 </div>
-                <input  type="submit" value="Gerar Relatório">
+     <div class="col-md-4">
+        <label for="localizacao" class="form-label">Localização</label>
+        <select class="form-select" name="localizacao">
+            <option value="">Todas</option>
+            {% for loc in localizacoes %}
+                <option value="{{ loc }}" {% if localizacao_atual == loc %}selected{% endif %}>{{ loc }}</option>
+            {% endfor %}
+        </select>
+    </div>
+     <input  type="submit" value="Gerar Relatório">
+
 
  </form>
 <form class="row g-3 mb-4" method="get" action="{{ url_for('main.index') }}">

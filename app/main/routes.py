@@ -248,13 +248,30 @@ def gerar_relatorio_pdf():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     user_id = current_user.id
-    grupo = request.args.getlist('relatorio')
+    grupo = request.args.getlist('grupo')
+    localizacao = request.args.getlist('localizacao')
+    lista = [grupo[0], localizacao[0]]
+
+    query = [ ' AND ' +x+'@= %s' for x in lista]
+
+    l = lambda c: not c.contains('AND @=')
+    q = list(map(lambda e: e.replace('@',''),list(map(l, query))))
+    print(q)
+
     print(grupo)
-    if grupo:
-        cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s AND grupo = %s', (user_id, grupo[0]))
-    else:
+    print(len(localizacao[0]))
+    if len(grupo[0]) > 2 and len(localizacao[0]) > 2:
+        cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s AND grupo = %s AND localizacao = %s', (user_id, grupo[0], localizacao[0]))
+        print('entrou aqui')
+        dados = cursor.fetchall()
+
+    elif len(grupo[0]) <2  and  len(localizacao[0]) < 2:
         cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s', (user_id,))
-    dados = cursor.fetchall()
+        dados = cursor.fetchall()
+        print("entrou")
+
+
+
 
     html = render_template('relatorio_pdf.html', dados=dados)
 
