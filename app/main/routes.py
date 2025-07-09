@@ -1,6 +1,6 @@
 from itertools import groupby
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, make_response, send_file
 from flask_login import login_required, current_user
 from ..db import get_db_connection
 import os
@@ -11,6 +11,7 @@ import openai
 from openai import OpenAI
 from dotenv import load_dotenv
 import re
+import pandas as pd
 
 from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
 from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
@@ -387,4 +388,34 @@ def comentar(especie_id):
     cursor.close()
     conn.close()
     return redirect(url_for('main.info', id=especie_id))
+
+@main_bp.route('/relatorio/excel', methods=['GET'])
+@login_required
+def gerar_relatorio_excel():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    id = current_user.id
+    cursor.execute('SELECT * FROM angiospermas WHERE user_id = %s', (id,))
+    dados = cursor.fetchall()
+    if dados:
+        colunas = dados[0].keys()
+        colunas = list(map(lambda x : str(x), colunas))
+        dicionario = {colunas[x]: [dados[y][colunas[x]] for y in range(0, len(dados))] for x in range(0, len(colunas))}
+        dataframe = pd.DataFrame(dicionario)
+        print(dataframe)
+
+        # Cria um buffer para Dataframe
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            dataframe.to_excel(writer, index=False, sheet_name='Relatório')
+        output.seek(0)
+        return  send_file(
+            output,
+            as_attachment=True,
+            download_name='relatorio_especies.xlsx',
+            mimetype='application,vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+
+
 
