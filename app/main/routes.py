@@ -293,6 +293,10 @@ def gerar_relatorio_pdf():
 @main_bp.route('/mapa')
 @login_required
 def mapa():
+    acesso = current_user.tipo_acesso
+    if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute('SELECT especie, latitude, longitude FROM angiospermas WHERE user_id = %s AND latitude IS NOT NULL AND longitude IS NOT NULL', (current_user.id,))
@@ -320,6 +324,10 @@ def curiosidades_animais():
 @main_bp.route('/distribuicao', methods=['GET', 'POST'])
 @login_required
 def distribuicao_especie():
+    acesso = current_user.tipo_acesso
+    if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+
     if request.method == 'POST':
         nome = request.form['nome']
         taxonKey = buscar_takonkey_gbif(nome)
@@ -335,6 +343,11 @@ def distribuicao_especie():
 @main_bp.route('/descricao_organismo', methods=['GET', 'POST'])
 @login_required
 def descricao_organismo():
+    acesso = current_user.tipo_acesso
+    if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+
+
     descricao = None
     erro = None
     if request.method == 'POST':

@@ -21,7 +21,7 @@ def login():
         conn.close()
 
         if user and check_password_hash(user['password'], password):
-            user_obj = User(id=user['id'], username=user['username'], password=user['password'])
+            user_obj = User(id=user['id'], username=user['username'], password=user['password'], tipo_acesso=user['tipo_acesso'])
             login_user(user_obj)
             id = user['id']
 
@@ -40,11 +40,12 @@ def register():
 
         # Gera hash da senha
         password_hash = generate_password_hash(password)
+        tipo_acesso = 'free'
 
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            cursor.execute('INSERT INTO usuarios (username, password) VALUES (%s, %s)', (username, password_hash))
+            cursor.execute('INSERT INTO usuarios (username, password, tipo_acesso) VALUES (%s, %s, %s)', (username, password_hash, tipo_acesso))
             conn.commit()
             flash('Usuário cadastrado com sucesso! Faça login.')
             return redirect(url_for('auth.login'))
@@ -59,3 +60,26 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for('auth.login'))
+
+@auth_bp.route('/liberar')
+def liberar_acesso():
+    email = request.args.get('email')
+    token = request.args.get('token')
+
+    if token == 'testando123':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE usuarios SET tipo_acesso = 'pro' WHERE username = %s", (email,))
+        conn.commit()
+        flash('Acesso Pro liberado para testes.', 'sucess')
+        return redirect(url_for('auth.login'))
+    flash('Token inválido.', 'danger')
+    return redirect(url_for('main.index'))
+
+@auth_bp.route('/teste', methods=['GET', 'POST'])
+def teste():
+    if request.method == 'POST':
+        email = request.form['email']
+        flash('Obrigado! Você receberá o acesso por e-mail.', 'success')
+    return render_template('teste.html')
+

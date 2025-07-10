@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template, flash, current_app, redirect, url_for
-from flask_login import login_required
+from flask_login import login_required, current_user
 import os, base64, requests
 from ..db import get_db_connection
 from dotenv import load_dotenv
@@ -15,6 +15,10 @@ UPLOADER_FOLDER = 'static/uploads'
 @identificar_bp.route('/identificar', methods=['GET', 'POST'])
 @login_required
 def identificar():
+    acesso = current_user.tipo_acesso
+    if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+
     if request.method == 'POST':
         imagem = request.files['imagem']
         estado_id = request.form['estado']
@@ -76,6 +80,10 @@ def identificar():
 @identificar_bp.route("/identificar_insetos", methods = ['GET', 'POST'])
 @login_required
 def identificar_insetos():
+    acesso = current_user.tipo_acesso
+    if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+
     if request.method == 'POST':
         imagem = request.files['imagem']
         if imagem and allowed_file(imagem.filename):
@@ -124,6 +132,10 @@ def identificar_insetos():
 @identificar_bp.route('/identificar_cogumelos', methods=['GET', 'POST'])
 @login_required
 def identificar_cogumelos():
+    acesso = current_user.tipo_acesso
+    if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+
     if request.method == 'POST':
         imagem = request.files['imagem']
         print(imagem.filename)
@@ -172,6 +184,10 @@ def identificar_cogumelos():
 @identificar_bp.route('/identificar_pg', methods=['GET', 'POST'])
 @login_required
 def identificar_pg():
+    acesso = current_user.tipo_acesso
+    if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+
     if request.method == 'POST':
         imagem = request.files['imagem']
         print(imagem)

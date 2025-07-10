@@ -34,5 +34,5 @@ def load_user(user_id):
     cursor.close()
     conn.close()
     if user:
-        return User(id=user['id'], username=user['username'], password=user['password'])
+        return User(id=user['id'], username=user['username'], password=user['password'], tipo_acesso=user['tipo_acesso'])
     return None
