@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import re
 import pandas as pd
 
+from PROJETO_PLANTAE.app.utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
 from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
 from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
 #pip install xhtml2pdf
@@ -346,6 +347,9 @@ def descricao_organismo():
     acesso = current_user.tipo_acesso
     if acesso not in ['pro', 'premium']:
         return redirect(url_for('main.index'))
+    if not can_call_api(current_user.id):
+        flash("Limite de uso mensal atingido. Faça upgrade para continuar.", "warning")
+        return redirect(url_for('main.index'))
 
 
     descricao = None
@@ -371,9 +375,12 @@ def descricao_organismo():
 
 
             descricao = resposta.choices[0].message.content
+            oncrement_api_usage(current_user.id)
+            log_api_usage(current_user.id, 'openAi', "success")
 
         except Exception as e:
             erro = str(e)
+            log_api_usage(current_user.id, 'openAi', "fail")
     especie = list(re.findall("[Ee]sp[eé]cie: ?[*]{,2}? ?[A-z]* [A-z]*", descricao)) if descricao else None
     especie2 = especie[0].split(":")[-1].replace("*","").strip() if especie else None
     print("espécie: ", especie2)

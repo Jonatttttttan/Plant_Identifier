@@ -5,6 +5,7 @@ from ..db import get_db_connection
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from ..main.routes import allowed_file
+from PROJETO_PLANTAE.app.utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
 
 load_dotenv()
 PLANT_ID_API_KEY = os.getenv('PLANT_ID_API_KEY')
@@ -17,6 +18,9 @@ UPLOADER_FOLDER = 'static/uploads'
 def identificar():
     acesso = current_user.tipo_acesso
     if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+    if not can_call_api(current_user.id):
+        flash("Limite de uso mensal atingido. Faça upgrade para continuar.", "warning")
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
@@ -70,11 +74,15 @@ def identificar():
                 regiao_nome = dados_municipio['microrregiao']['mesorregiao']['UF']['regiao']['nome']
                 cod_ibge = dados_municipio['id']
 
+                oncrement_api_usage(current_user.id)
+                log_api_usage(current_user.id, 'plant.id', 'success')
+
 
                 return render_template('resultado_identificacao.html', especie=especie, descricao=descricao, imagem=filepath, nome_municipio=nome_municipio, estado_nome=estado_nome, regiao_nome=regiao_nome,cod_ibge=cod_ibge)
 
             else:
                 flash("Não foi possível identificar a planta")
+                log_api_usage(current_user.id, 'plant.id', 'fail')
     return render_template('identificar.html') # MAP Biomas e GBIF
 
 @identificar_bp.route("/identificar_insetos", methods = ['GET', 'POST'])
@@ -82,6 +90,9 @@ def identificar():
 def identificar_insetos():
     acesso = current_user.tipo_acesso
     if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+    if not can_call_api(current_user.id):
+        flash("Limite de uso mensal atingido. Faça upgrade para continuar.", "warning")
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
@@ -135,6 +146,9 @@ def identificar_cogumelos():
     acesso = current_user.tipo_acesso
     if acesso not in ['pro', 'premium']:
         return redirect(url_for('main.index'))
+    if not can_call_api(current_user.id):
+        flash("Limite de uso mensal atingido. Faça upgrade para continuar.", "warning")
+        return redirect(url_for('main.index'))
 
     if request.method == 'POST':
         imagem = request.files['imagem']
@@ -186,6 +200,9 @@ def identificar_cogumelos():
 def identificar_pg():
     acesso = current_user.tipo_acesso
     if acesso not in ['pro', 'premium']:
+        return redirect(url_for('main.index'))
+    if not can_call_api(current_user.id):
+        flash("Limite de uso mensal atingido. Faça upgrade para continuar.", "warning")
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
