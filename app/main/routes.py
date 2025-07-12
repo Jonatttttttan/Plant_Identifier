@@ -246,7 +246,7 @@ def home():
 def ecologia_home():
     return render_template('/ecologia_home.html')
 
-@main_bp.route('/relatorio_pdf', methods = ['GET'])
+'''@main_bp.route('/relatorio_pdf', methods = ['GET'])
 @login_required
 def gerar_relatorio_pdf():
 
@@ -289,7 +289,7 @@ def gerar_relatorio_pdf():
     response = make_response(resultado.getvalue())
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'attachment; filename=relatorio.pdf'
-    return response
+    return response'''
 
 @main_bp.route('/mapa')
 @login_required

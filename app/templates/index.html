@@ -14,7 +14,7 @@
             </li><br>
             <li>
 
-            <form class="row g-3 align-items-center" method="get" action="{{ url_for('main.gerar_relatorio_pdf') }}">
+            <form class="row g-3 align-items-center" method="get" action="{{ url_for('main.index') }}">
                 <div class="col-auto">
                     <label for="grupo" class="form-label">Selecione um grupo</label>
                     <select class="form-select" name="grupo" multiple size="4">
@@ -42,7 +42,7 @@
         <input type="hidden" name="grupo" value="{{ grupo_atual }}">
         <button class="btn btn-success" type="submit">Baixar Excel</button>
     </form>
- <form class="row g-3 align-items-center" method="get" action="{{ url_for('main.gerar_relatorio_pdf') }}">
+<!-- <form class="row g-3 align-items-center" method="get" action="{{ url_for('main.index') }}">
                 <div class="col-auto">
                     <label for="grupo2" class="form-label">Selecione um grupo</label>
                     <select class="form-select" name="grupo">
@@ -65,7 +65,7 @@
      <input  type="submit" value="Gerar Relatório">
 
 
- </form>
+ </form>-->
 <form class="row g-3 mb-4" method="get" action="{{ url_for('main.index') }}">
     <div class="col-md-4">
         <label for="grupo" class="form-label">Grupo</label>
