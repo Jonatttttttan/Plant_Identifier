@@ -35,7 +35,7 @@ def log_api_usage(user_id, api_name, status='success'):
     conn.close()
 
 
-def reset_api_usage():
+'''def reset_api_usage():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('UPDATE usuarios SET monthly_api_used = 0')
@@ -45,7 +45,7 @@ def reset_api_usage():
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=reset_api_usage, trigger='cron', day=1, hour =0 )
-scheduler.start()
+scheduler.start()'''
 
 
 
