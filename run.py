@@ -1,4 +1,5 @@
-from PROJETO_PLANTAE.app import create_app
+#from PROJETO_PLANTAE.app import create_app
+from app import create_app
 import os
 
 app = create_app()

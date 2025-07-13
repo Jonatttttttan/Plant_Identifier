@@ -13,7 +13,8 @@ from dotenv import load_dotenv
 import re
 import pandas as pd
 
-from PROJETO_PLANTAE.app.utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
+#from PROJETO_PLANTAE.app.utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
+from ..utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
 from ..utils.wikipedia import buscar_curiosidades_wikipedia as wiki
 from ..utils.takon_key import buscar_ocorrencias_gbif, buscar_takonkey_gbif
 #pip install xhtml2pdf

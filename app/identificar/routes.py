@@ -5,7 +5,8 @@ from ..db import get_db_connection
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from ..main.routes import allowed_file
-from PROJETO_PLANTAE.app.utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
+#from PROJETO_PLANTAE.app.utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
+from ..utils.api_control import can_call_api, oncrement_api_usage, log_api_usage
 
 load_dotenv()
 PLANT_ID_API_KEY = os.getenv('PLANT_ID_API_KEY')
