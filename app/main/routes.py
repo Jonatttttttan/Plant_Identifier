@@ -6,7 +6,7 @@ from ..db import get_db_connection
 import os
 import io
 from werkzeug.utils import secure_filename
-from xhtml2pdf import pisa
+#from xhtml2pdf import pisa
 import openai
 from openai import OpenAI
 from dotenv import load_dotenv
