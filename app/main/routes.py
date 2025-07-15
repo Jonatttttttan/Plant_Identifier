@@ -230,6 +230,7 @@ def info(id):
 
     cursor.execute('SELECT c.texto, c.data, u.username FROM comentarios2 c JOIN usuarios u ON c.usuario_id = u.id WHERE c.especie_id = %s ORDER BY c.data DESC', (id,))
     comentarios = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -239,6 +240,7 @@ def info(id):
 
 @main_bp.route('/home')
 def home():
+    
 
     
     return render_template('Home.html')
