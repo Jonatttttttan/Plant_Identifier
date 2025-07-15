@@ -1,13 +1,25 @@
 import mysql.connector
+import os
+from dotenv import load_dotenv
+
+
 
 def get_db_connection():
-    conn = mysql.connector.connect(
+   ''' conn = mysql.connector.connect(
         host='localhost',
         user='root',
         password='password',
         database='plantas'
-    )
-    return conn
+    )'''
+   load_dotenv()
+   conn = mysql.connector.connect(
+       host = os.getenv('DB_HOST'),
+       user = os.getenv('DB_USER'),
+       password = os.getenv('DB_PASSWORD'),
+       database=os.getenv('DB_NAME'),
+       port=int(os.getenv('DB_PORT', 3306))
+   )
+   return conn
 
 def init_db():
     conn = get_db_connection()
